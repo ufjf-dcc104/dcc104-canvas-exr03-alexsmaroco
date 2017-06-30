@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>DCC104 - Exemplo 02</title>
+    <script src="ImageLoader.js" charset="utf-8"></script>
+    <script src="Sprite.js" charset="utf-8"></script>
+    <script src="Level.js" charset="utf-8"></script>
+    <script src="AudioLoader.js" charset="utf-8"></script>
+  </head>
+  <body>
+    <h1>DCC104 - Exemplo 02</h1>
+    <canvas></canvas>
+    <script>
+      var eCanvas = document.getElementsByTagName("canvas")[0];
+      eCanvas.width = 600;
+      eCanvas.height = 380;
+      var ctx = eCanvas.getContext("2d");
+
+      var il = new ImageLoader();
+      il.load("pc", "images/flappy.png");
+
+
+      var al = new AudioLoader()
+
+
+
+      var fps = 60;
+      var atual = new Date();
+      var anterior = new Date();
+      var dt = 1/fps;
+	  var colidiu = false
+
+      var player = new Sprite();
+      player.x = 30;
+      player.y = 40;
+	  player.width = 76/2
+	  player.height = 60/2
+    player.angle = -90
+	  player.cooldown = 0.5 // pequeno cooldown para o boost
+	  player.grav = 280
+	  player.score = 0
+    player.debug = true
+      var level = new Level();
+      level.imageLib = il;
+      level.init(eCanvas.width, eCanvas.height);
+
+      desenha();
+
+
+
+
+      function desenha(){
+        requestAnimationFrame(desenha);
+        atual = new Date();
+        dt = (atual - anterior)/1000;
+        ctx.clearRect(0,0,eCanvas.width, eCanvas.height)
+        ctx.strokeRect(0,0,eCanvas.width, eCanvas.height)
+        ctx.fillStyle = "darkgreen";
+        ctx.fillText("dt: "+dt+" fps:"+Math.floor(1/dt), 10, 10);
+
+		
+		if(!colidiu) {
+			player.cooldown-=dt
+			player.mover(dt);
+			level.mover(dt, player);
+			level.spawnParedes(player.score)
+		}
+		
+        level.colidiuCom(player,
+          function(inimigo, alvo){
+            inimigo.color = "red";
+			colidiu = true
+          }
+        );
+
+        player.desenharImg(ctx, il.images["pc"]);
+        level.desenhar(ctx);
+        level.desenharInfo(ctx, player, colidiu)
+
+        anterior = atual;
+      }
+
+      addEventListener("keydown", function(e){
+        switch (e.keyCode) {
+          case 32:
+			if(player.cooldown <= 0) {
+				level.boost(player);
+				player.cooldown = 0.5
+			}
+            break;
+			case 37:
+			//player.vx = -40
+			break
+			case 39:
+			//player.vx = 40
+			break
+          default:
+
+        }
+      });
+
+      addEventListener("keyup", function(e){
+        switch (e.keyCode) {
+          case 37:
+            //player.vx = 0;
+            break;
+          case 39:
+            //player.vx = 0;
+            break;
+          default:
+
+        }
+      });
+
+    </script>
+  </body>
+
+
+
+
+</html>
